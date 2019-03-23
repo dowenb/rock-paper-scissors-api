@@ -1,21 +1,27 @@
 #!flask/bin/python
-from flask import Flask
+from flask import Flask, jsonify, request
 from random import choice
+
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/', methods=["GET"])
 def index():
-    return "Welcome to Rocker Paper Scissors API! 1, 2, 3 /shoot"
+    return jsonify(Rock="{}shoot/rock".format(request.base_url), Paper="{}shoot/paper".format(request.base_url), Scissors="{}shoot/scissors".format(request.base_url))
 
-@app.route('/shoot')
-def shoot(UsersShot  = 'paper'): # TODO allow human to "post" their shot
+@app.route('/shoot/', methods=["GET"])
+def instructions():
+    return jsonify(Rock="{}rock".format(request.base_url), Paper="{}paper".format(request.base_url), Scissors="{}scissors".format(request.base_url))
+
+@app.route('/shoot/<shot>', methods=["GET"])
+def shoot(shot):
+    human = shot
     cpu = ComputersShot()
-    human = UsersShot
-    if ValidShot(UsersShot):
-        return "CPU: {} Human: {} the result is {}".format(cpu,human,Winner(cpu, human))
+    result = Winner(cpu, human)
+    if ValidShot(human):
+        return jsonify(Computer=cpu,Human=human,Result=result)
     else:
-        return "Valid shots include: 'rock', 'paper', 'scissors'" # TODO do not return a 200 OK code here
+        return jsonify(Error="Invalid Shot", success=False, Rock="{}rock".format(request.base_url), Paper="{}paper".format(request.base_url), Scissors="{}scissors".format(request.base_url)) #TODO make this return 400 error
 
 def Winner(cpu, human):
     if cpu == human:
